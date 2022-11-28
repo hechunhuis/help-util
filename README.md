@@ -18,7 +18,7 @@
 
 |—main.py #程序入口
 
-|—logo,ini #系统LOGO
+|—logo.ini #系统LOGO
 
 ## 运行
 
