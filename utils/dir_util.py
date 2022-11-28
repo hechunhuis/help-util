@@ -14,13 +14,13 @@ import os
 class DirUtil:
 
     @classmethod
-    def getSubDirectory(parentPath:str):
+    def getSubPath(self, parentPath:str):
         '''
         根据路径，获取子目录数组
         Args:
             parentPath:父路径
         Returns：
-            subDirs:直属子目录数组
+            subPath:直属子路径数组
         '''
         dirs = os.listdir(parentPath)
         subDirs = []

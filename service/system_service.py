@@ -2,6 +2,7 @@ from commons.color import Colors
 from model.menu_model import MenuModel
 from service.uuid_service import UUIDService
 from service.date_service import DateService
+from service.dir_service import DirService
 
 import os
 import sys
@@ -23,20 +24,20 @@ class SystemService:
         '''
         self.menus.append(MenuModel(1, 0, "目录工具", "【解决目录批量创建|复制|移动|删除】", None))
 
-        self.menus.append(MenuModel(2, 1, "批量删除目录", "【根据规则批量删除目录】", None))
-        self.menus.append(MenuModel(3, 1, "批量移动目录", "【根据规则批量移动目录】", None))
-        self.menus.append(MenuModel(4, 1, "批量复制目录", "【根据规则批量复制目录】", None))
-        self.menus.append(MenuModel(5, 1, "批量创建目录", "【根据规则批量创建目录】", None))
+        self.menus.append(MenuModel(2, 1, "批量删除目录", "【根据规则批量删除目录】", DirService().batchDelete))
+        self.menus.append(MenuModel(3, 1, "批量移动目录", "【根据规则批量移动目录】", DirService().batchMove))
+        self.menus.append(MenuModel(4, 1, "批量复制目录", "【根据规则批量复制目录】", DirService().batchCopy))
+        self.menus.append(MenuModel(5, 1, "批量创建目录", "【根据规则批量创建目录】", DirService().batchCreate))
 
         self.menus.append(MenuModel(6, 0, "UUID工具", "", None))
-        self.menus.append(MenuModel(7, 6, "基于时间戳生成", "【随机生成UUID】", UUIDService.getUUIDByTime))
-        self.menus.append(MenuModel(8, 6, "基于随机数生成", "【随机生成UUID】", UUIDService.getUUIDByRan))
-        self.menus.append(MenuModel(9, 6, "基于名字和MD5散列值生成", "【随机生成UUID】", UUIDService.getUUIDBySpec))
-        self.menus.append(MenuModel(10, 6, "基于名字和SAHI值生成", "【随机生成UUID】", UUIDService.getUUIDBySha))
+        self.menus.append(MenuModel(7, 6, "基于时间戳生成", "【随机生成UUID】", UUIDService().getUUIDByTime))
+        self.menus.append(MenuModel(8, 6, "基于随机数生成", "【随机生成UUID】", UUIDService().getUUIDByRan))
+        self.menus.append(MenuModel(9, 6, "基于名字和MD5散列值生成", "【随机生成UUID】", UUIDService().getUUIDBySpec))
+        self.menus.append(MenuModel(10, 6, "基于名字和SAHI值生成", "【随机生成UUID】", UUIDService().getUUIDBySha))
 
         self.menus.append(MenuModel(11, 0, "时间工具", "", None))
-        self.menus.append(MenuModel(12, 11, "将时间戳转换为日期格式", "", DateService.converTimeToDate))
-        self.menus.append(MenuModel(13, 11, "将日期转换为时间戳", "", DateService.converDateToTime))
+        self.menus.append(MenuModel(12, 11, "将时间戳转换为日期格式", "", DateService().converTimeToDate))
+        self.menus.append(MenuModel(13, 11, "将日期转换为时间戳", "", DateService().converDateToTime))
         
         self.menus.append(MenuModel(14, 0, "JSON工具", "", None))
 
