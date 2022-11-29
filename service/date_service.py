@@ -3,7 +3,7 @@ import datetime, time
 
 class DateService:
 
-    def converDateToTime():
+    def converDateToTime(self):
         '''
         将日期转换为时间戳
         '''
@@ -17,7 +17,7 @@ class DateService:
         finally:
             return
 
-    def converTimeToDate():
+    def converTimeToDate(self):
         '''
         将时间戳转换为日期
         '''

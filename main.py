@@ -1,9 +1,7 @@
 from service.system_service import SystemService
-from colorama import init
 from commons.color import Colors
 import sys,os
 
-init(autoreset=True)
 systemService = SystemService()
 while True:
     systemService.runMethod(systemService.menuController())
@@ -11,7 +9,7 @@ while True:
     while True:
             choise = input("\n是否返回主菜单[Y/N]:")
             if "Y" == choise.upper():
-                os.system('cls')
+                os.system('cls || clear')
                 break
             elif "N" == choise.upper():
                 sys.exit()

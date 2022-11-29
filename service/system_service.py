@@ -110,7 +110,7 @@ class SystemService:
                         if id == 0:
                             return id
                         break
-                os.system('cls')
+                os.system('cls || clear')
             else:
                 self.printLogo()
                 return id
