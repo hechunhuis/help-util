@@ -22,7 +22,7 @@ class SystemService:
         '''
         初始化菜单信息
         '''
-        self.menus.append(MenuModel(1, 0, "目录工具", "【解决目录批量创建|复制|移动|删除】", None))
+        self.menus.append(MenuModel(1, 0, "目录工具", "", None))
 
         self.menus.append(MenuModel(2, 1, "批量删除目录", "【根据规则批量删除目录】", DirService().batchDelete))
         self.menus.append(MenuModel(3, 1, "批量移动目录", "【根据规则批量移动目录】", DirService().batchMove))
@@ -41,7 +41,7 @@ class SystemService:
         
         self.menus.append(MenuModel(14, 0, "JSON工具", "", None))
 
-        self.menus.append(MenuModel(0, 0, "退出", "【退出系统】", sys.exit))
+        self.menus.append(MenuModel(0, 0, "退出", "", sys.exit))
     
     def printLogo(self):
         '''
@@ -99,7 +99,8 @@ class SystemService:
             if len(subMenus) > 0:
                 self.printLogo()
                 for menu in subMenus:
-                    Colors.print(Colors.OKGREEN, "%s. %s%s"%(menu.id, menu.name, menu.description))
+                    consoleId = menu.id if (menu.id > 10) else "%s%s"%(menu.id, " ")
+                    Colors.print(Colors.OKGREEN, "%s. %s%s"%(consoleId, menu.name, menu.description))
                 while True:
                     selected = input("\n请选择菜单选项[回车返回上级]：")
                     if selected == '':
