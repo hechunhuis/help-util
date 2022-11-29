@@ -14,7 +14,7 @@ import os
 class DirUtil:
 
     @classmethod
-    def getSubPath(self, parentPath:str):
+    def getSubName(self, parentPath:str):
         '''
         根据路径，获取子目录数组
         Args:
@@ -22,8 +22,19 @@ class DirUtil:
         Returns：
             subPath:直属子路径数组
         '''
-        dirs = os.listdir(parentPath)
-        subDirs = []
-        for dir in dirs:
-            subDirs.append(parentPath + "\\" + dir)
-        return subDirs
+        return os.listdir(parentPath)
+
+    @classmethod
+    def filteDirPath(self, prePath, sourceNames):
+        '''
+        过滤目录文件
+        Returns：
+            dirPaths:目录路径集合
+        '''
+        if len(sourceNames) == 0:
+            return sourceNames
+        dirNames = []
+        for sourceName in sourceNames:
+            if os.path.isdir(os.path.join(prePath, sourceName)):
+                dirNames.append(sourceName)
+        return dirNames

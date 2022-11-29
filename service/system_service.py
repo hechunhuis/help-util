@@ -29,19 +29,22 @@ class SystemService:
         self.menus.append(MenuModel(3, 1, "批量移动目录", "【根据规则批量移动目录】", DirService().batchMove))
         self.menus.append(MenuModel(4, 1, "批量复制目录", "【根据规则批量复制目录】", DirService().batchCopy))
         self.menus.append(MenuModel(5, 1, "批量创建目录", "【根据规则批量创建目录】", DirService().batchCreate))
+        self.menus.append(MenuModel(6, 1, "批量前追加目录名称", "【批量在目录前追加名称】", DirService().batchPreAppendName))
+        self.menus.append(MenuModel(7, 1, "批量后追加目录名称", "【批量在目录后追加名称】", DirService().batchPostAppendName))
+        self.menus.append(MenuModel(8, 1, "批量替换目录名称", "【批量替换目录名中的字符】", DirService().batchRepalceAppendName))
 
-        self.menus.append(MenuModel(6, 0, "UUID工具", "", None))
-        self.menus.append(MenuModel(7, 6, "基于时间戳生成", "【随机生成UUID】", UUIDService().getUUIDByTime))
-        self.menus.append(MenuModel(8, 6, "基于随机数生成", "【随机生成UUID】", UUIDService().getUUIDByRan))
-        self.menus.append(MenuModel(9, 6, "基于名字和MD5散列值生成", "【随机生成UUID】", UUIDService().getUUIDBySpec))
-        self.menus.append(MenuModel(10, 6, "基于名字和SAHI值生成", "【随机生成UUID】", UUIDService().getUUIDBySha))
+        self.menus.append(MenuModel(9, 0, "UUID工具", "", None))
+        self.menus.append(MenuModel(10, 9, "基于时间戳生成", "【随机生成UUID】", UUIDService().getUUIDByTime))
+        self.menus.append(MenuModel(11, 9, "基于随机数生成", "【随机生成UUID】", UUIDService().getUUIDByRan))
+        self.menus.append(MenuModel(12, 9, "基于名字和MD5散列值生成", "【随机生成UUID】", UUIDService().getUUIDBySpec))
+        self.menus.append(MenuModel(13, 9, "基于名字和SAHI值生成", "【随机生成UUID】", UUIDService().getUUIDBySha))
 
-        self.menus.append(MenuModel(11, 0, "时间工具", "", None))
-        self.menus.append(MenuModel(12, 11, "将时间戳转换为日期格式", "", DateService().converTimeToDate))
-        self.menus.append(MenuModel(13, 11, "将日期转换为时间戳", "", DateService().converDateToTime))
+        self.menus.append(MenuModel(14, 0, "时间工具", "", None))
+        self.menus.append(MenuModel(15, 14, "将时间戳转换为日期格式", "", DateService().converTimeToDate))
+        self.menus.append(MenuModel(16, 14, "将日期转换为时间戳", "", DateService().converDateToTime))
         
-        self.menus.append(MenuModel(14, 0, "数据库工具", "", None))
-        self.menus.append(MenuModel(15, 14, "批量设置数据库字段值", "【根据表格对应关系批量设置】", None))
+        self.menus.append(MenuModel(17, 0, "数据库工具", "", None))
+        self.menus.append(MenuModel(18, 17, "批量设置数据库字段值", "【根据表格对应关系批量设置】", None))
 
         self.menus.append(MenuModel(0, 0, "退出", "", sys.exit))
     

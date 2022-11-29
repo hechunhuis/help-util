@@ -17,8 +17,8 @@ class LoggerUtil:
     }
 
     def getLogger(self, filename, level='info'):
-        currentDate = time.strftime("%Y-%m-%d", time.localtime(int(time.time())))
-        loggerSavePath = "%s/%s_%s%s"%(self.loggerSaveDir, filename, currentDate, ".log")
+        currentDate = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime(int(time.time())))
+        loggerSavePath = "%s/%s_%s%s"%(self.loggerSaveDir, currentDate, filename, ".log")
         # 创建日志对象
         log = logging.getLogger(loggerSavePath)
         # 设置日志级别
