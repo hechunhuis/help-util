@@ -1,7 +1,7 @@
 import sys
 import logging
 from logging import handlers
-import time
+import time, os
 
 class LoggerUtil:
     
@@ -17,6 +17,8 @@ class LoggerUtil:
     }
 
     def getLogger(self, filename, level='info'):
+        if not os.path.exists(self.loggerSaveDir):
+            os.mkdir(self.loggerSaveDir)
         currentDate = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime(int(time.time())))
         loggerSavePath = "%s/%s_%s%s"%(self.loggerSaveDir, currentDate, filename, ".log")
         # 创建日志对象
