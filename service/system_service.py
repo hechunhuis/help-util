@@ -17,6 +17,7 @@ class SystemService:
 
     logoPath = "logo.ini"
     menus = []
+    currentMenuPath = []
 
     def __init__(self) -> None:
         '''
@@ -39,7 +40,8 @@ class SystemService:
         self.menus.append(MenuModel(12, 11, "将时间戳转换为日期格式", "", DateService().converTimeToDate))
         self.menus.append(MenuModel(13, 11, "将日期转换为时间戳", "", DateService().converDateToTime))
         
-        self.menus.append(MenuModel(14, 0, "JSON工具", "", None))
+        self.menus.append(MenuModel(14, 0, "数据库工具", "", None))
+        self.menus.append(MenuModel(15, 14, "批量设置数据库字段值", "【根据表格对应关系批量设置】", None))
 
         self.menus.append(MenuModel(0, 0, "退出", "", sys.exit))
     
@@ -94,22 +96,26 @@ class SystemService:
         '''
         获取菜单控制信息
         '''
+        self.currentMenuPath = []
         while True:
             subMenus = self.getMenuByParentId(id)
             if len(subMenus) > 0:
                 self.printLogo()
+                self.printCurrentMenuPath()
                 for menu in subMenus:
                     consoleId = menu.id if (menu.id > 10) else "%s%s"%(menu.id, " ")
                     Colors.print(Colors.OKGREEN, "%s. %s%s"%(consoleId, menu.name, menu.description))
                 while True:
                     selected = input("\n请选择菜单选项[回车返回上级]：")
                     if selected == '':
+                        self.currentMenuPath.remove(self.getById(id).name)
                         id = self.getById(id).parentId
                         break
                     if self.checkSelect(id, selected):
                         id = int(selected)
                         if id == 0:
                             return id
+                        self.currentMenuPath.append(self.getById(id).name)
                         break
                 os.system('cls || clear')
             else:
@@ -127,7 +133,12 @@ class SystemService:
                 else:
                     menu.method()
                 break
-
+    
+    def printCurrentMenuPath(self):
+        absoluteMenuPath = "当前菜单路径：根路径"
+        for currentMenu in self.currentMenuPath:
+            absoluteMenuPath = absoluteMenuPath + "/" + currentMenu
+        Colors.print(Colors.OKBLUE, absoluteMenuPath + "\n")
 if __name__ == "__main__":
     # 运行示例
     # SystemService.runMethod(SystemService.menuController())
