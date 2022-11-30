@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 class Menu:
     id = None           # ID主键
     parentId = None     # 父ID主键

@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 from commons.color import Colors
 from bean.menu import Menu
 from service.uuid_service import UUIDService

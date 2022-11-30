@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 import os
 from commons.color import Colors
 from utils.dir_util import DirUtil
