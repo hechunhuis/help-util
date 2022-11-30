@@ -24,11 +24,29 @@
 
 |—logo.ini #系统LOGO
 
+## 基础环境
+
+### centos7
+
+```shell
+yum install python3 -y
+pip3 install virtualenv
+```
 ## 运行
 
-1. 前提需要在宿主机安装python3
-2. 将程序下载到宿主机
-3. 进入程序目录下，执行start.bat或start.sh
+### centos7
+
+```shell
+mkdir -p /mnt/app && cd /mnt/app
+git clone https://github.com/hechunhuis/help-util.git
+cd ./help-util
+virtualenv --python=python3
+source env/bin/activate
+pip install -i https://pypi.doubanio.com/simple/ -r requirements.txt
+python3 main.py
+```
+
+
 
 ## 二次开发
 
