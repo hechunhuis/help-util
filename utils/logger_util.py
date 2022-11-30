@@ -37,7 +37,7 @@ class LoggerUtil:
         # file_handler = handlers.RotatingFileHandler(filename=filename, maxBytes=1*1024*1024*1024, backupCount=1, encoding='utf-8')
         file_handler.setFormatter(fmt)
 
-        log.addHandler(console_handler)
+        # log.addHandler(console_handler)
         log.addHandler(file_handler)
         return log
 

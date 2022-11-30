@@ -1,8 +1,9 @@
 from commons.color import Colors
-from model.menu_model import MenuModel
+from bean.menu import Menu
 from service.uuid_service import UUIDService
 from service.date_service import DateService
 from service.dir_service import DirService
+from service.database_service import DataBaseService
 
 import os
 import sys
@@ -23,30 +24,30 @@ class SystemService:
         '''
         初始化菜单信息
         '''
-        self.menus.append(MenuModel(1, 0, "目录工具", "", None))
+        self.menus.append(Menu(1, 0, "目录工具", "", None))
 
-        self.menus.append(MenuModel(2, 1, "批量删除目录", "【根据规则批量删除目录】", DirService().batchDelete))
-        self.menus.append(MenuModel(3, 1, "批量移动目录", "【根据规则批量移动目录】", DirService().batchMove))
-        self.menus.append(MenuModel(4, 1, "批量复制目录", "【根据规则批量复制目录】", DirService().batchCopy))
-        self.menus.append(MenuModel(5, 1, "批量创建目录", "【根据规则批量创建目录】", DirService().batchCreate))
-        self.menus.append(MenuModel(6, 1, "批量前追加目录名称", "【批量在目录前追加名称】", DirService().batchPreAppendName))
-        self.menus.append(MenuModel(7, 1, "批量后追加目录名称", "【批量在目录后追加名称】", DirService().batchPostAppendName))
-        self.menus.append(MenuModel(8, 1, "批量替换目录名称", "【批量替换目录名中的字符】", DirService().batchRepalceAppendName))
+        self.menus.append(Menu(2, 1, "批量删除目录(未开放)", "【根据规则批量删除目录】", None))
+        self.menus.append(Menu(3, 1, "批量移动目录(未开放)", "【根据规则批量移动目录】", None))
+        self.menus.append(Menu(4, 1, "批量复制目录(未开放)", "【根据规则批量复制目录】", None))
+        self.menus.append(Menu(5, 1, "批量创建目录(未开放)", "【根据规则批量创建目录】", None))
+        self.menus.append(Menu(6, 1, "批量前追加目录名称", "【批量在目录前追加名称】", DirService().batchPreAppendName))
+        self.menus.append(Menu(7, 1, "批量后追加目录名称", "【批量在目录后追加名称】", DirService().batchPostAppendName))
+        self.menus.append(Menu(8, 1, "批量替换目录名称", "【批量替换目录名中的字符】", DirService().batchRepalceAppendName))
 
-        self.menus.append(MenuModel(9, 0, "UUID工具", "", None))
-        self.menus.append(MenuModel(10, 9, "基于时间戳生成", "【随机生成UUID】", UUIDService().getUUIDByTime))
-        self.menus.append(MenuModel(11, 9, "基于随机数生成", "【随机生成UUID】", UUIDService().getUUIDByRan))
-        self.menus.append(MenuModel(12, 9, "基于名字和MD5散列值生成", "【随机生成UUID】", UUIDService().getUUIDBySpec))
-        self.menus.append(MenuModel(13, 9, "基于名字和SAHI值生成", "【随机生成UUID】", UUIDService().getUUIDBySha))
+        self.menus.append(Menu(9, 0, "UUID工具", "", None))
+        self.menus.append(Menu(10, 9, "基于时间戳生成", "【随机生成UUID】", UUIDService().getUUIDByTime))
+        self.menus.append(Menu(11, 9, "基于随机数生成", "【随机生成UUID】", UUIDService().getUUIDByRan))
+        self.menus.append(Menu(12, 9, "基于名字和MD5散列值生成", "【随机生成UUID】", UUIDService().getUUIDBySpec))
+        self.menus.append(Menu(13, 9, "基于名字和SAHI值生成", "【随机生成UUID】", UUIDService().getUUIDBySha))
 
-        self.menus.append(MenuModel(14, 0, "时间工具", "", None))
-        self.menus.append(MenuModel(15, 14, "将时间戳转换为日期格式", "", DateService().converTimeToDate))
-        self.menus.append(MenuModel(16, 14, "将日期转换为时间戳", "", DateService().converDateToTime))
+        self.menus.append(Menu(14, 0, "时间工具", "", None))
+        self.menus.append(Menu(15, 14, "将时间戳转换为日期格式", "", DateService().converTimeToDate))
+        self.menus.append(Menu(16, 14, "将日期转换为时间戳", "", DateService().converDateToTime))
         
-        self.menus.append(MenuModel(17, 0, "数据库工具", "", None))
-        self.menus.append(MenuModel(18, 17, "批量设置数据库字段值", "【根据表格对应关系批量设置】", None))
+        self.menus.append(Menu(17, 0, "数据库工具", "", None))
+        self.menus.append(Menu(18, 17, "批量设置数据库字段值", "【根据表格对应关系批量设置】", DataBaseService().updateByExcel))
 
-        self.menus.append(MenuModel(0, 0, "退出", "", sys.exit))
+        self.menus.append(Menu(0, 0, "退出", "", sys.exit))
     
     def printLogo(self):
         '''
@@ -111,7 +112,8 @@ class SystemService:
                 while True:
                     selected = input("\n请选择菜单选项[回车返回上级]：")
                     if selected == '':
-                        self.currentMenuPath.remove(self.getById(id).name)
+                        if not id == 0:
+                            self.currentMenuPath.remove(self.getById(id).name)
                         id = self.getById(id).parentId
                         break
                     if self.checkSelect(id, selected):

@@ -1,4 +1,4 @@
-class MenuModel:
+class Menu:
     id = None           # ID主键
     parentId = None     # 父ID主键
     name = None         # 功能菜单名称

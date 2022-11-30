@@ -71,7 +71,7 @@ class DirService:
 
     def batchPreAppendName(self):
         '''
-        批量前追加目录文件名称
+        批量前追加目录名称
         '''
         
         rootPath = self.getAndCheckDir()
@@ -103,7 +103,7 @@ class DirService:
 
     def batchPostAppendName(self):
         '''
-        批量后追加目录文件名称
+        批量后追加目录名称
         '''
         
         rootPath = self.getAndCheckDir()
@@ -134,7 +134,7 @@ class DirService:
 
     def batchRepalceAppendName(self):
         '''
-        批量前追加目录文件名称
+        批量替换目录名称
         '''
         
         rootPath = self.getAndCheckDir()

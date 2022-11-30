@@ -12,4 +12,6 @@ class Colors:
 
     @classmethod
     def print(self, color, text):
-        print(f"{color}{text}{self.ENDC}")
+        info = f"{color}{text}{self.ENDC}"
+        print(info)
+        return info

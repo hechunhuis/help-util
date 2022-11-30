@@ -2,36 +2,40 @@
     该脚本主要用于连接数据库
 '''
 import pymysql
+from commons.color import Colors
+from bean.database import Database
+from utils.logger_util import LoggerUtil
 
+import time
 class DBUtils:
 
-    host = None
-    port = None
-    dbName = None
-    username = None
-    password = None
+    logger = LoggerUtil().getLogger('DB执行记录')
 
-    def __init__(self, host, port, dbName, username, password) -> None:
-        self.host = host
-        self.port = port
-        self.dbName = dbName
-        self.username = username
-        self.password = password
-    
     @classmethod
-    def getConnection(self):
+    def getConnection(self, database):
         '''
             设置数据库连接信息
             @retrun connect 返回数据库的连接对象
         '''
         connect = None
-        try :
-            print("正在进行数据库连接操作：host:%s port:%s dbName:%s username:%s password:%s"%(self.host, self.port, self.dbName, self.username, self.password))
-            connect = pymysql.connect(host=self.host,port=self.port, database=self.dbName, user=self.username, password=self.password)
-        except Exception as e :
-            print("数据库连接失败！\n%s"%e)
-        print("数据库连接成功")
-        return connect
+        for index in range(1,6):
+            try :
+                self.logger.info("正在进行第 %s 次数据库连接操作：%s"%(index, database.toString()))
+                Colors.print(Colors.OKBLUE, "正在进行第 %s 次数据库连接操作：%s"%(index, database.toString()))
+                connect = pymysql.connect(host=database.host, port=database.port, database=database.dbName, user=database.username, password=database.password)
+                if not connect == None:
+                    self.logger.info("数据库连接成功")
+                    Colors.print(Colors.OKGREEN, "数据库连接成功")
+                    return connect
+            except Exception as e :
+                connectTimeTnterval = 5
+                self.logger.error("数据库连接失败， %s 秒后进行重新连接尝试！\n%s"%(connectTimeTnterval, e))
+                Colors.print(Colors.FAIL, "数据库连接失败， %s 秒后进行重新连接尝试！\n%s"%(connectTimeTnterval, e))
+                time.sleep(connectTimeTnterval)
+        self.logger.error("数据库连接失败，请稍后再试")
+        Colors.print(Colors.FAIL, "数据库连接失败，请稍后再试")
+            
+        
 
     @classmethod
     def closeConnect(self, connect):
@@ -41,9 +45,11 @@ class DBUtils:
         '''
         try:
             connect.close()
-            print("数据库连接关闭成功")
+            self.logger.info("数据库连接关闭成功")
+            Colors.print(Colors.OKGREEN, "数据库连接关闭成功")
         except Exception as e:
-            print("数据库连接关闭失败！")
+            self.logger.error("数据库连接关闭失败！")
+            Colors.print(Colors.FAIL, "数据库连接关闭失败！")
 
     @classmethod
     def fetch(self, connect, sql:str):
@@ -52,11 +58,15 @@ class DBUtils:
             @param connect 数据库连接对象
             @param sql str 查询语句
         '''
+        if connect == None:
+            connect = self.getConnection(Database())
         cur = connect.cursor(cursor=pymysql.cursors.DictCursor)
-        print("开始执行SQL：%s"%sql)
+        self.logger.info("开始执行SQL：%s"%sql)
+        Colors.print(Colors.OKBLUE, "开始执行SQL：%s"%sql)
         cur.execute(sql)
         data = cur.fetchone()
-        print("查询到 %s 条符合条件的记录，信息：%s"%(len(data), data))
+        self.logger.info("查询到 %s 条符合条件的记录，信息：%s"%(len(data), data))
+        Colors.print(Colors.OKBLUE, "查询到 %s 条符合条件的记录，信息：%s"%(len(data), data))
         return data
 
     @classmethod
@@ -66,9 +76,36 @@ class DBUtils:
             @param connect 数据库连接对象
             @param sql str 查询语句
         '''
+        if connect == None:
+            connect = self.getConnection(Database())
         cur = connect.cursor(cursor=pymysql.cursors.DictCursor)
-        print("开始执行SQL：%s"%sql)
+        self.logger.info("开始执行SQL：%s"%sql)
+        Colors.print(Colors.OKBLUE, "开始执行SQL：%s"%sql)
         cur.execute(sql)
         data = cur.fetchall()
-        print("查询到 %s 条符合条件的记录，信息：%s"%(len(data), data))
+        self.logger.info("查询到 %s 条符合条件的记录，信息：%s"%(len(data), data))
+        Colors.print(Colors.OKBLUE, "查询到 %s 条符合条件的记录，信息：%s"%(len(data), data))
         return data
+
+    @classmethod
+    def update(self, connect, sql:str):
+        '''
+            更新数据库操作
+        '''
+        if connect == None:
+            connect = self.getConnection(Database())
+        try:
+            cur = connect.cursor()
+            self.logger.info("开始执行SQL：%s"%sql)
+            Colors.print(Colors.OKBLUE, "开始执行SQL：%s"%sql)
+            cur.execute(sql)
+            connect.commit()
+            self.logger.info("提交事务成功")
+            Colors.print(Colors.OKGREEN, "提交事务成功")
+        except Exception as e:
+            print(e)
+            self.logger.error("执行SQL：%s 失败！开始事务回滚"%sql)
+            Colors.print(Colors.FAIL, "执行SQL：%s 失败！开始事务回滚"%sql)
+            connect.rollback()
+            self.logger.info("事务回滚完成")
+            Colors.print(Colors.OKGREEN, "事务回滚完成")
