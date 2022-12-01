@@ -48,6 +48,7 @@ class SystemService:
         
         self.menus.append(Menu(17, 0, "数据库工具", "", None))
         self.menus.append(Menu(18, 17, "批量设置数据库字段值", "【根据表格对应关系批量设置】", DataBaseService().updateByExcel))
+        self.menus.append(Menu(19, 17, "批量设置数据库字段值根据列", "【根据表格对应关系批量设置】", DataBaseService().updateByExcelColumns))
 
         self.menus.append(Menu(0, 0, "退出", "", sys.exit))
     

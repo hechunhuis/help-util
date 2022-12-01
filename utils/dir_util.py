@@ -27,7 +27,10 @@ class DirUtil:
     @classmethod
     def filteDirPath(self, prePath, sourceNames):
         '''
-        过滤目录文件
+        过滤并返回prePath下的目录路径
+        Args:
+            prePath:前置路径
+            sourceNames：目录名称集合
         Returns：
             dirPaths:目录路径集合
         '''
@@ -38,3 +41,25 @@ class DirUtil:
             if os.path.isdir(os.path.join(prePath, sourceName)):
                 dirNames.append(sourceName)
         return dirNames
+    
+    @classmethod
+    def filterFilePath(self, prePath, suffixInfos):
+        '''
+        获取prePath下，后缀名为suffixInfo的路径集合
+        Args：
+            prePath:前置路径
+            suffixInfo:文件后缀名,例如：['.xlsx','.xls']
+        Returns：
+            filePaths：符合条件的文件路径集合
+        '''
+        filePaths = []
+        if prePath == None or suffixInfos == None or len(suffixInfos) == 0:
+            return filePaths
+        allPaths = self.getSubName(prePath)
+        if allPaths == None or len(allPaths) == 0:
+            return filePaths
+        for path in allPaths:
+            for suffixInfo in suffixInfos:
+                if path.endswith(suffixInfo):
+                    filePaths.append(os.path.join(prePath, path))
+        return filePaths

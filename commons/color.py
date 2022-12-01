@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+from utils.logger_util import LoggerUtil
 class Colors:
 
     HEADER = '\033[95m'
@@ -12,8 +13,11 @@ class Colors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
+    logger = LoggerUtil().getLogger("console-log")
+
     @classmethod
     def print(self, color, text):
-        info = f"{color}{text}{self.ENDC}"
-        print(info)
-        return info
+        printInfo = f"{color}{text}{self.ENDC}"
+        print(printInfo)
+        self.logger.info(printInfo)
+        return printInfo

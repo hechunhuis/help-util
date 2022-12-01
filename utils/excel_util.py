@@ -4,6 +4,7 @@
     导出表格工具类
 '''
 import openpyxl
+from commons.color import Colors
 
 class ExcelUtils:
     
@@ -55,4 +56,29 @@ class ExcelUtils:
             if len(dataItem.keys()) > 0:
                 data.append(dataItem)
         
+        return data
+
+    @classmethod
+    def read(self, path:str, startRow:int, readColumnIndexs, dataTitle):
+        '''
+        读取Excel并转换为对象
+        path：Excel路径
+        startRow：开始读取的行数，最小值为1
+        readColumnIndexs：需要读取的列索引数组，第一列索引为1
+        keyArr：读取的列索引对应的key值数组
+        '''
+        Colors.print(Colors.OKBLUE,"正在读取 %s 表格内容数据……"%path)
+        workBook=openpyxl.load_workbook(path)
+        allSheel=workBook.get_sheet_names()
+        execSheel=workBook.get_sheet_by_name(allSheel[0])
+        data = []
+        for row in range(startRow, execSheel.max_row + 1):
+            dataItem = {}
+            dataTitleIndex = 0
+            for column in readColumnIndexs:
+                dataItem[dataTitle[dataTitleIndex]] = execSheel.cell(row,column).value
+                dataTitleIndex += 1
+            if len(dataItem.keys()) > 0:
+                data.append(dataItem)
+        Colors.print(Colors.OKGREEN,"读取 %s 表格内容数据完成"%path)
         return data
