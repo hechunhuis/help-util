@@ -107,25 +107,35 @@ class DataBaseService:
         if not os.path.isdir(self.updateByExcelColumnsScannerExcelsDirPath):
             Colors.print(Colors.FAIL, "路径不是目录！，路径信息%s"%self.updateByExcelColumnsScannerExcelsDirPath)
             return
+        
         excelPaths = DirUtil.filterFilePath(self.updateByExcelColumnsScannerExcelsDirPath, self.updateByExcelColumnsScannerExcelSuffix)
         if len(excelPaths) == 0:
-            Colors.print(Colors.FAIL, "没有扫描到后缀名为【.xlsx】的Excel文件，路径信息%s"%self.updateByExcelColumnsScannerExcelsDirPath)
+            Colors.print(Colors.FAIL, "没有扫描到后缀名包含 %s 的Excel文件，路径信息%s"%(self.updateByExcelColumnsScannerExcelSuffix, self.updateByExcelColumnsScannerExcelsDirPath))
             return
+        else:
+            Colors.print(Colors.OKGREEN, "成功扫描到 %s 个表格信息,表格信息如下："%len(excelPaths))
+            for excelPath in excelPaths:
+                Colors.print(Colors.OKBLUE, excelPath)
+
         logger = LoggerUtil().getLogger('根据Excel表格更新数据库字段')
 
         # 存放各个表格的数据内容 key=Excel路径 value=Excel数据
         excelDataMap = {}
-
+        # 存放check后有问题的表格
+        errorExcelPaths = []
         for excelPath in excelPaths:
             # 读取并存放单个表格的数据内容
             excelData = ExcelUtils.read(path=excelPath, startRow=self.updateByExcelColumnsReadStartRow, readColumnIndexs=self.updateByExcelColumnsReadColumnIndexs, dataTitle=self.updateByExcelColumnsTitle)
             if self.checkExcelNone(excelData):
-                Colors.print(Colors.FAIL,"Excel: %s 中读取的列存在空值，请检查！"%excelPath)
-                return
-            Colors.print(Colors.OKGREEN,"Excel: %s 通过空值校验"%excelPath)
+                errorExcelPaths.append(excelPath)
             excelDataMap[excelPath] = excelData
 
-        Colors.print(Colors.OKBLUE, "成功读取到 %s 个表格，表格信息入下："%len(excelDataMap.keys()))
+        if len(errorExcelPaths) > 0:
+            for errorExcelPath in errorExcelPaths:
+                Colors.print(Colors.FAIL,"Excel: %s 未通过空值校验"%errorExcelPath)
+            return
+
+        Colors.print(Colors.OKBLUE, "\n\n成功读取完成 %s 个表格，表格信息入下："%len(excelDataMap.keys()))
         for excelPathKey in excelDataMap.keys():
             Colors.print(Colors.OKBLUE, "%s"%excelPathKey)
         choise = input("是否继续执行[Y/N]：")
@@ -142,6 +152,8 @@ class DataBaseService:
             Colors.print(Colors.FAIL,"数据库连接失败，程序结束")
             return
 
+        
+        updateSqls = []
         execExcelIndex = 1
         for excelPathKey in excelDataMap.keys():
             execDataIndex = 1
@@ -167,11 +179,30 @@ class DataBaseService:
                         setSql = "%s %s=%s %s"%(setSql, dbTableColumnName, value, ",")
                 
                 updateSql = updateSql%(Database().tableName, setSql.rstrip(","), whereSql.rstrip("AND "))
-                logger.info("当前正在处理 %s / %s 个表格数据的 %s / %s 条数据，执行SQL为：%s, 表格路径为：%s"%(execExcelIndex, len(excelDataMap.keys()),execDataIndex, len(excelDataMap[excelPathKey]),updateSql, excelPathKey))
-                Colors.print(Colors.OKBLUE, "当前正在处理 %s / %s 个表格数据的 %s / %s 条数据，执行SQL为：%s, 表格路径为：%s"%(execExcelIndex, len(excelDataMap.keys()),execDataIndex, len(excelDataMap[excelPathKey]),updateSql, excelPathKey))
-                # DBUtils.update(connection, updateSql)
+                updateSqls.append(updateSql)
+                logger.info("当前正在生成 %s / %s 个表格数据的 %s / %s 条数据，生成SQL为：%s, 表格路径为：%s"%(execExcelIndex, len(excelDataMap.keys()),execDataIndex, len(excelDataMap[excelPathKey]),updateSql, excelPathKey))
+                Colors.print(Colors.OKBLUE, "当前正在生成 %s / %s 个表格数据的 %s / %s 条数据，生成SQL为：%s, 表格路径为：%s"%(execExcelIndex, len(excelDataMap.keys()),execDataIndex, len(excelDataMap[excelPathKey]),updateSql, excelPathKey))
+                
                 execDataIndex += 1
             execExcelIndex += 1
+        
+        if len(updateSqls) == 0:
+            Colors.print(Colors.FAIL, "\n\n生成SQL数据为 0 条，跳过执行更新操作")
+            return
+        else:
+            Colors.print(Colors.OKGREEN, "\n\n成功生成 %s 条SQL"%(len(updateSqls)))
+            for updataSql in updateSqls:
+                Colors.print(Colors.OKBLUE, updataSql)
+
+            choise = input("\n是否继续执行[Y/N]：")
+            if "Y" == choise.upper():
+                DBUtils.batchUpdate(updateSqls)
+            elif "N" == choise.upper():
+                return
+            else:
+                Colors.print(Colors.FAIL, "输入选项有误！")
+                return
+
         DBUtils.closeConnect(connection)
 
     def checkExcelNone(self, excelData):

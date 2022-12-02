@@ -5,6 +5,7 @@
 '''
 import openpyxl
 from commons.color import Colors
+from commons.my_thread import MyThread
 
 class ExcelUtils:
     
@@ -70,15 +71,38 @@ class ExcelUtils:
         Colors.print(Colors.OKBLUE,"正在读取 %s 表格内容数据……"%path)
         workBook=openpyxl.load_workbook(path)
         allSheel=workBook.get_sheet_names()
-        execSheel=workBook.get_sheet_by_name(allSheel[0])
+        excelSheel=workBook.get_sheet_by_name(allSheel[0])
         data = []
-        for row in range(startRow, execSheel.max_row + 1):
+        excelMaxRow = excelSheel.max_row + 1
+        threadRange = 100
+        threadCount = int((excelMaxRow/threadRange) + 1) if (excelMaxRow % threadRange) > 0 else int(excelMaxRow/threadRange)
+        threadList = []
+        for thread in range(0, threadCount) :
+            startReadRow = startRow if thread == 0 else thread*threadRange
+            endReadRow = excelMaxRow if (thread*threadRange + threadRange) > excelMaxRow else thread*threadRange + threadRange
+            threadList.append(MyThread(func=self.read2, args=(path, excelSheel, startReadRow, endReadRow, readColumnIndexs, dataTitle)))
+        for threadItem in threadList:
+            threadItem.setDaemon(True)
+            threadItem.start()
+        for threadItem in threadList:
+            threadItem.join()
+        for threadItem in threadList:
+            data.append(threadItem.getResult())
+        newData = []
+        for dataThreadItem in data:
+            newData = newData + dataThreadItem
+        return newData
+    
+    @classmethod
+    def read2(self, path:str, excelSheel, startRow:int, endRow:int, readColumnIndexs, dataTitle):
+        data = []
+        for row in range(startRow, endRow):
+            Colors.print(Colors.OKBLUE,"正在读取 %s 表格内容 %s / %s 条数据……"%(path, row, endRow))
             dataItem = {}
             dataTitleIndex = 0
             for column in readColumnIndexs:
-                dataItem[dataTitle[dataTitleIndex]] = execSheel.cell(row,column).value
+                dataItem[dataTitle[dataTitleIndex]] = excelSheel.cell(row,column).value
                 dataTitleIndex += 1
             if len(dataItem.keys()) > 0:
                 data.append(dataItem)
-        Colors.print(Colors.OKGREEN,"读取 %s 表格内容数据完成"%path)
         return data
