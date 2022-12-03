@@ -25,6 +25,8 @@ class DataBaseService:
     updateByExcelColumnsScannerExcelSuffix = None
     updateByExcelColumnsWhereColumns = None
     updateByExcelColumnsUpdateColumns = None
+    updateByExcelColumnsCustomAppendWhere = None
+    updateByExcelColumnsIsCheckNone = True
 
     def __init__(self) -> None:
         self.config = configparser.ConfigParser()
@@ -126,7 +128,7 @@ class DataBaseService:
         for excelPath in excelPaths:
             # 读取并存放单个表格的数据内容
             excelData = ExcelUtils.read(path=excelPath, startRow=self.updateByExcelColumnsReadStartRow, readColumnIndexs=self.updateByExcelColumnsReadColumnIndexs, dataTitle=self.updateByExcelColumnsTitle)
-            if self.checkExcelNone(excelData):
+            if self.updateByExcelColumnsIsCheckNone and self.checkExcelNone(excelData):
                 errorExcelPaths.append(excelPath)
             excelDataMap[excelPath] = excelData
 
@@ -158,7 +160,7 @@ class DataBaseService:
         for excelPathKey in excelDataMap.keys():
             execDataIndex = 1
             for excelDataItem in excelDataMap[excelPathKey]:
-                updateSql = "UPDATE `%s` SET %s WHERE %s"
+                updateSql = "UPDATE `%s` SET %s WHERE %s %s;"
                 setSql = ""
                 whereSql = ""
                 for dbTableColumnName in excelDataItem.keys():
@@ -178,7 +180,7 @@ class DataBaseService:
                     if dbTableColumnName in self.updateByExcelColumnsUpdateColumns:
                         setSql = "%s %s=%s %s"%(setSql, dbTableColumnName, value, ",")
                 
-                updateSql = updateSql%(Database().tableName, setSql.rstrip(","), whereSql.rstrip("AND "))
+                updateSql = updateSql%(Database().tableName, setSql.rstrip(","), whereSql.rstrip("AND "), self.updateByExcelColumnsCustomAppendWhere)
                 updateSqls.append(updateSql)
                 logger.info("当前正在生成 %s / %s 个表格数据的 %s / %s 条数据，生成SQL为：%s, 表格路径为：%s"%(execExcelIndex, len(excelDataMap.keys()),execDataIndex, len(excelDataMap[excelPathKey]),updateSql, excelPathKey))
                 Colors.print(Colors.OKBLUE, "当前正在生成 %s / %s 个表格数据的 %s / %s 条数据，生成SQL为：%s, 表格路径为：%s"%(execExcelIndex, len(excelDataMap.keys()),execDataIndex, len(excelDataMap[excelPathKey]),updateSql, excelPathKey))
@@ -256,6 +258,10 @@ class DataBaseService:
             self.updateByExcelColumnsWhereColumns = self.config['update_by_excel_columns']['whereColumns'].split()
             self.updateByExcelColumnsUpdateColumns = self.config['update_by_excel_columns']['updateColumns'].split()
             self.updateByExcelColumnsScannerExcelSuffix = self.config['update_by_excel_columns']['scannerExcelSuffix'].split()
+            isCheckNone = self.config['update_by_excel_columns']['isCheckNone']
+            self.updateByExcelColumnsIsCheckNone = False if isCheckNone.upper() == 'FALSE' else True
+            customAppendWhere = self.config['update_by_excel_columns']['customAppendWhere']
+            self.updateByExcelColumnsCustomAppendWhere = "" if customAppendWhere == None or len(customAppendWhere) == 0 else customAppendWhere
             # 将字符串数组转换为int数组
             updateByExcelColumnsReadColumnIndexs = []
             for updateByExcelColumnsReadColumnIndex in self.updateByExcelColumnsReadColumnIndexs:
@@ -306,6 +312,10 @@ class DataBaseService:
 %s
 [数据库需要更新的字段列]
 %s
+[数据库更新语句自定义追加的SQL内容]
+%s
+[是否检查Excel中的空值或None]
+%s
 [扫描的Excel所在目录路径]
 %s
-'''%(self.updateByExcelColumnsReadStartRow, self.updateByExcelColumnsReadColumnIndexs, self.updateByExcelColumnsTitle, self.updateByExcelColumnsWhereColumns, self.updateByExcelColumnsUpdateColumns, self.updateByExcelColumnsScannerExcelsDirPath))
+'''%(self.updateByExcelColumnsReadStartRow, self.updateByExcelColumnsReadColumnIndexs, self.updateByExcelColumnsTitle, self.updateByExcelColumnsWhereColumns, self.updateByExcelColumnsUpdateColumns, self.updateByExcelColumnsCustomAppendWhere, self.updateByExcelColumnsIsCheckNone, self.updateByExcelColumnsScannerExcelsDirPath))

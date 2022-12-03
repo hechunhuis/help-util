@@ -122,8 +122,8 @@ class DBUtils:
         
         successRecord = []
         failedRecord = []
-        taskList = []
         execIndex = 1
+        
         for sql in sqls:
             Colors.print(Colors.OKCYAN, "正在执行 %s / %s 条SQL"%(execIndex, len(sqls)))
             result = self.update(None, sql)

@@ -74,7 +74,7 @@ class ExcelUtils:
         excelSheel=workBook.get_sheet_by_name(allSheel[0])
         data = []
         excelMaxRow = excelSheel.max_row + 1
-        threadRange = 100
+        threadRange = 500
         threadCount = int((excelMaxRow/threadRange) + 1) if (excelMaxRow % threadRange) > 0 else int(excelMaxRow/threadRange)
         threadList = []
         for thread in range(0, threadCount) :
