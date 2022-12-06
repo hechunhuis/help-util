@@ -7,12 +7,11 @@ import pymysql
 from commons.color import Colors
 from bean.database import Database
 from utils.logger_util import LoggerUtil
-from commons.my_thread import MyThread
-from concurrent.futures import ThreadPoolExecutor
 import time
+
 class DBUtils:
 
-    logger = LoggerUtil().getLogger('DB执行记录')
+    logger = LoggerUtil().getLogger('database_execute_records')
 
     @classmethod
     def getConnection(self, database):
@@ -21,21 +20,24 @@ class DBUtils:
             @retrun connect 返回数据库的连接对象
         '''
         connect = None
-        for index in range(1,6):
+        maxReconnectCount = 5
+        reconnectTimeTnterval = 5
+
+        for index in range(1, maxReconnectCount + 1):
             try :
-                Colors.print(Colors.OKBLUE, "正在进行第 %s 次数据库连接操作：%s"%(index, database.toString()))
+                Colors.print(Colors.OKBLUE, "正在进行第 %s / %s 次数据库连接操作：%s"%(index, reconnectTimeTnterval, database.toString()))
                 connect = pymysql.connect(host=database.host, port=database.port, database=database.dbName, user=database.username, password=database.password)
                 if not connect == None:
                     Colors.print(Colors.OKGREEN, "数据库连接成功")
                     return connect
             except Exception as e :
-                connectTimeTnterval = 5
-                Colors.print(Colors.FAIL, "数据库连接失败， %s 秒后进行重新连接尝试！\n%s"%(connectTimeTnterval, e))
-                time.sleep(connectTimeTnterval)
-        Colors.print(Colors.FAIL, "数据库连接失败，请稍后再试")
-            
+                if index == 5:
+                    Colors.print(Colors.FAIL, "数据库连接失败，请稍后再试")
+                else:
+                    Colors.print(Colors.FAIL, "数据库连接失败， %s 秒后尝试重新连接！错误信息：%s"%(reconnectTimeTnterval, e))
+                    time.sleep(reconnectTimeTnterval)
         
-
+            
     @classmethod
     def closeConnect(self, connect):
         '''
@@ -106,7 +108,6 @@ class DBUtils:
             Colors.print(Colors.OKGREEN, "提交事务成功")
             result['code'] = 'success'
         except Exception as e:
-            print(e)
             self.logger.error("执行SQL：%s 失败！开始事务回滚"%sql)
             Colors.print(Colors.FAIL, "执行SQL：%s 失败！开始事务回滚"%sql)
             connect.rollback()
@@ -117,7 +118,7 @@ class DBUtils:
     @classmethod
     def batchUpdate(self, sqls):
         '''
-        多线程批量更新SQL
+        批量更新SQL
         '''
         
         successRecord = []
@@ -132,11 +133,8 @@ class DBUtils:
             else:
                 failedRecord.append(result['info'])
             execIndex += 1
+        execRecord = {}
+        execRecord['successRecord'] = successRecord
+        execRecord['failedRecord'] = failedRecord
+        return execRecord
         
-        Colors.print(Colors.OKGREEN, "总共处理完 %s 个语句："%(len(successRecord) + len(failedRecord)))
-        Colors.print(Colors.OKGREEN, "成功处理了 %s / %s个语句：语句如下："%(len(successRecord), len(successRecord) + len(failedRecord)))
-        for success in successRecord:
-            Colors.print(Colors.OKGREEN, success)
-        Colors.print(Colors.FAIL, "其中 %s / %s 个语句处理失败：语句如下："%(len(failedRecord), len(successRecord) + len(failedRecord))) 
-        for failed in failedRecord:
-            Colors.print(Colors.FAIL, failed)

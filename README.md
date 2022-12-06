@@ -123,13 +123,61 @@ class MenuModel:
 
 概述：根据Excel表格，以及配置文件，对数据库字段进行批量修改
 
-Config配置文件【help-util/configs/update_by_excel.ini】:
+需要先配置**help-util/configs/update_by_excel.ini**
 
-![根据Excel表格批量修改数据库字段](images/update_by_excel.jpg)
+**update_by_excel.ini配置说明**
 
-模板Excel文件【help-util/configs/update_by_excel.xlsx】：
+```ini
+[database]
+# 数据库的连接信息
+# 数据库连接地址
+# 数据库连接端口
+# 连接的数据库名
+# 需要操作的数据库表
+# 数据库连接使用的用户名
+# 数据库连接使用的密码
+host = 127.0.0.1
+port = 3306
+dbName = dbName
+tableName = tableName
+username = root
+password = root
 
-![Excel模板文件](images/update_by_excel_1.jpg)
+[update_by_excel_columns]
+# 读取Excel表格的开始行数，第一行索引为1
+readStartRow = 1
+# 读取Excel表格的列索引集合，第一列索引为1,多个使用空格隔开
+readColumnIndexs = 1 2 3 4
+# 数据库字段列，注意：与【readColumnIndexs】顺序成映射关系,多个使用空格隔开
+title = db_column_1 db_column_2 db_column_3 db_column_4
+# 数据库表需要更新的where条件列名,多个使用空格隔开
+whereColumns = db_column_1 db_column_2
+# 数据库需要更新的set字段列名,多个使用空格隔开
+updateColumns = db_column_3 db_column_4
+# 自定义的SQL后拼接内容, 例如：AND draft = false AND del=false
+customAppendWhere = AND draft = false AND del=false
+# 需要扫描的Excel所在的父目录路径
+scannerExcelsDirPath = D:\Desktop\EXCEL_DIR
+# 是否检查Excel中的空值 True or False
+isCheckNone = False
+# 需要扫描Excel的后缀名，多个使用空格隔开，目前仅支持.xlsx，否则将会报错
+scannerExcelSuffix = .xlsx
+```
+
+根据此配置，会自动从Excel的第一行开始扫描数据，生成如下**UPDATE SQL**
+
+```sql
+UPDATE `tableName`
+SET 
+	db_column_3 = "数据表格第 3 列内容",
+    db_column_4 = "数据表格第 4 列内容"
+WHERE
+	db_column_1 = "数据表格第 1 列内容"
+	AND db_column_2 = "数据表格第 2 列内容"
+	AND draft = false AND del=false
+```
+
+
 
 ### 退出系统
 

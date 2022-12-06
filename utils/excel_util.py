@@ -60,7 +60,7 @@ class ExcelUtils:
         return data
 
     @classmethod
-    def read(self, path:str, startRow:int, readColumnIndexs, dataTitle):
+    def batchRead(self, path:str, startRow:int, readColumnIndexs, dataTitle):
         '''
         读取Excel并转换为对象
         path：Excel路径
@@ -80,7 +80,7 @@ class ExcelUtils:
         for thread in range(0, threadCount) :
             startReadRow = startRow if thread == 0 else thread*threadRange
             endReadRow = excelMaxRow if (thread*threadRange + threadRange) > excelMaxRow else thread*threadRange + threadRange
-            threadList.append(MyThread(func=self.read2, args=(path, excelSheel, startReadRow, endReadRow, readColumnIndexs, dataTitle)))
+            threadList.append(MyThread(func=self.read, args=(path, excelSheel, startReadRow, endReadRow, readColumnIndexs, dataTitle)))
         for threadItem in threadList:
             threadItem.setDaemon(True)
             threadItem.start()
@@ -94,7 +94,7 @@ class ExcelUtils:
         return newData
     
     @classmethod
-    def read2(self, path:str, excelSheel, startRow:int, endRow:int, readColumnIndexs, dataTitle):
+    def read(self, path:str, excelSheel, startRow:int, endRow:int, readColumnIndexs, dataTitle):
         data = []
         for row in range(startRow, endRow):
             Colors.print(Colors.OKBLUE,"正在读取 %s 表格内容 %s / %s 条数据……"%(path, row, endRow))

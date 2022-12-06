@@ -13,10 +13,6 @@ class DataBaseService:
 
     config = None
     configPath = './configs/update_by_excel.ini'
-    updateByExcelMap = None
-    updateByExcelWhereColumns = None
-    updateByExcelUpdateColumns = None
-    updateByExcelExcelPath = None
 
     updateByExcelColumnsReadStartRow = None
     updateByExcelColumnsTitle = None
@@ -32,94 +28,23 @@ class DataBaseService:
         self.config = configparser.ConfigParser()
         self.config.read(self.configPath, encoding='utf-8')
 
-    def updateByExcel(self):
-        '''
-        根据Excel表格更新数据库字段
-        '''
-        self.resetUpdateByExcelConfigInfo()
-        self.printDatabaseConfigInfo()
-        self.printUpdateByExcelInfo()
-        choise = input("是否继续执行[Y/N]：")
-        if "Y" == choise.upper():
-            pass
-        elif "N" == choise.upper():
-            return
-        else:
-            Colors.print(Colors.FAIL, "输入选项有误！")
-            return
-
-        if not os.path.exists(self.updateByExcelExcelPath):
-            Colors.print(Colors.FAIL, "Excel文件不存在！，路径信息：%s"%self.updateByExcelExcelPath)
-            return
-
-        if not self.checkExcelAndConfigInfo(): return
-
-        excelData = ExcelUtils.read(self.updateByExcelExcelPath, False)
-        logger = LoggerUtil().getLogger('根据Excel表格更新数据库字段')
-        connection = DBUtils.getConnection(Database())
-        current = 1
-        for excelDataItem in excelData:
-            updateSql = "UPDATE `%s` SET %s WHERE %s"
-            setSql = ""
-            whereSql = ""
-            for key in excelDataItem.keys():
-                dbTableColumnName = self.updateByExcelMap[key]
-                # 对数据表格中的值进行类型转换
-                value = ""
-                if type(excelDataItem[key]) == str:
-                    value = '"%s"'%str(excelDataItem[key])
-                elif type(excelDataItem[key]) == bool:
-                    value = '%s'%bool(excelDataItem[key])
-                elif excelDataItem[key] == None:
-                    value = "''"
-                else:
-                    value = excelDataItem[key]
-
-                if dbTableColumnName in self.updateByExcelWhereColumns:
-                    whereSql = "%s %s=%s %s "%(whereSql, dbTableColumnName, value, "AND")
-                if dbTableColumnName in self.updateByExcelUpdateColumns:
-                    setSql = "%s %s=%s %s"%(setSql, dbTableColumnName, value, ",")
-            
-            updateSql = updateSql%(Database().tableName, setSql.rstrip(","), whereSql.rstrip("AND "))
-            logger.info("当前进度 %s / %s, 正在处理SQL：%s"%(current, len(excelData), updateSql))
-            DBUtils.update(connection, updateSql)
-            current = current + 1
-        DBUtils.closeConnect(connection)
-
-
     def updateByExcelColumns(self):
         '''
         根据Excel表格列更新数据库字段
         '''
         self.resetUpdateByExcelColumnsConfigInfo()
         self.printDatabaseConfigInfo()
-        self.printUpdateByExcelColumnsInfo()
-        choise = input("是否继续执行[Y/N]：")
-        if "Y" == choise.upper():
-            pass
-        elif "N" == choise.upper():
-            return
-        else:
-            Colors.print(Colors.FAIL, "输入选项有误！")
-            return
+        self.printUpdateByExcelColumnsConfigInfo()
+        if not self.isContinue(): return
+        if not self.testDBConnection(): return
 
-        if not os.path.exists(self.updateByExcelColumnsScannerExcelsDirPath):
-            Colors.print(Colors.FAIL, "路径不存在！，路径信息：%s"%self.updateByExcelColumnsScannerExcelsDirPath)
-            return
-        if not os.path.isdir(self.updateByExcelColumnsScannerExcelsDirPath):
-            Colors.print(Colors.FAIL, "路径不是目录！，路径信息%s"%self.updateByExcelColumnsScannerExcelsDirPath)
-            return
-        
-        excelPaths = DirUtil.filterFilePath(self.updateByExcelColumnsScannerExcelsDirPath, self.updateByExcelColumnsScannerExcelSuffix)
+        excelPaths = self.getExcelPaths()
         if len(excelPaths) == 0:
-            Colors.print(Colors.FAIL, "没有扫描到后缀名包含 %s 的Excel文件，路径信息%s"%(self.updateByExcelColumnsScannerExcelSuffix, self.updateByExcelColumnsScannerExcelsDirPath))
             return
         else:
             Colors.print(Colors.OKGREEN, "成功扫描到 %s 个表格信息,表格信息如下："%len(excelPaths))
             for excelPath in excelPaths:
                 Colors.print(Colors.OKBLUE, excelPath)
-
-        logger = LoggerUtil().getLogger('根据Excel表格更新数据库字段')
 
         # 存放各个表格的数据内容 key=Excel路径 value=Excel数据
         excelDataMap = {}
@@ -127,34 +52,71 @@ class DataBaseService:
         errorExcelPaths = []
         for excelPath in excelPaths:
             # 读取并存放单个表格的数据内容
-            excelData = ExcelUtils.read(path=excelPath, startRow=self.updateByExcelColumnsReadStartRow, readColumnIndexs=self.updateByExcelColumnsReadColumnIndexs, dataTitle=self.updateByExcelColumnsTitle)
+            excelData = ExcelUtils.batchRead(path=excelPath, startRow=self.updateByExcelColumnsReadStartRow, readColumnIndexs=self.updateByExcelColumnsReadColumnIndexs, dataTitle=self.updateByExcelColumnsTitle)
             if self.updateByExcelColumnsIsCheckNone and self.checkExcelNone(excelData):
                 errorExcelPaths.append(excelPath)
             excelDataMap[excelPath] = excelData
 
-        if len(errorExcelPaths) > 0:
-            for errorExcelPath in errorExcelPaths:
-                Colors.print(Colors.FAIL,"Excel: %s 未通过空值校验"%errorExcelPath)
-            return
+        for errorExcelPath in errorExcelPaths:
+            Colors.print(Colors.FAIL,"Excel: %s 未通过空值校验"%errorExcelPath)
+        if len(errorExcelPaths) > 0: return
 
         Colors.print(Colors.OKBLUE, "\n\n成功读取完成 %s 个表格，表格信息入下："%len(excelDataMap.keys()))
         for excelPathKey in excelDataMap.keys():
             Colors.print(Colors.OKBLUE, "%s"%excelPathKey)
-        choise = input("是否继续执行[Y/N]：")
-        if "Y" == choise.upper():
-            pass
-        elif "N" == choise.upper():
+
+        if not self.isContinue(): return
+        logger = LoggerUtil().getLogger('batch_update_by_excel')
+        updateSqls = self.generateUpdateSqls(excelDataMap, logger)
+        
+        if len(updateSqls) == 0:
+            Colors.print(Colors.FAIL, "\n\n生成SQL数据为 0 条，跳过执行更新操作")
             return
         else:
-            Colors.print(Colors.FAIL, "输入选项有误！")
-            return
-        
-        connection = DBUtils.getConnection(Database())
-        if connection == None:
-            Colors.print(Colors.FAIL,"数据库连接失败，程序结束")
-            return
+            Colors.print(Colors.OKGREEN, "\n\n成功生成 %s 条SQL"%(len(updateSqls)))
+            for updataSql in updateSqls:
+                Colors.print(Colors.OKBLUE, updataSql)
 
+        if not self.isContinue(): return
         
+        execRecord = DBUtils.batchUpdate(updateSqls) 
+        
+        Colors.print(Colors.OKGREEN, "总共处理完 %s 个语句："%(len(execRecord['successRecord']) + len(execRecord['failedRecord'])))
+        logger.info("总共处理完 %s 个语句："%(len(execRecord['successRecord']) + len(execRecord['failedRecord'])))
+        Colors.print(Colors.OKGREEN, "成功处理了 %s / %s个语句：语句如下："%(len(execRecord['successRecord']), len(execRecord['successRecord']) + len(execRecord['failedRecord'])))
+        logger.info("成功处理了 %s / %s个语句：语句如下："%(len(execRecord['successRecord']), len(execRecord['successRecord']) + len(execRecord['failedRecord'])))
+        for success in execRecord['successRecord']:
+            Colors.print(Colors.OKGREEN, success)
+            logger.info(success)
+        Colors.print(Colors.FAIL, "其中 %s / %s 个语句处理失败：语句如下："%(len(execRecord['failedRecord']), len(execRecord['successRecord']) + len(execRecord['failedRecord'])))
+        logger.info("其中 %s / %s 个语句处理失败：语句如下："%(len(execRecord['failedRecord']), len(execRecord['successRecord']) + len(execRecord['failedRecord'])))
+        for failed in execRecord['failedRecord']:
+            Colors.print(Colors.FAIL, failed)
+            logger.info(failed)
+
+    def getExcelPaths(self):
+        '''
+        获取扫描的Excel所在目录信息
+        '''
+        excelPaths = []
+        if not os.path.exists(self.updateByExcelColumnsScannerExcelsDirPath):
+            Colors.print(Colors.FAIL, "Excel扫描目录路径不存在！路径信息：%s"%self.updateByExcelColumnsScannerExcelsDirPath)
+            return excelPaths
+
+        if not os.path.isdir(self.updateByExcelColumnsScannerExcelsDirPath):
+            Colors.print(Colors.FAIL, "Excel扫描目录路径不是目录！路径信息：%s"%self.updateByExcelColumnsScannerExcelsDirPath)    
+            return excelPaths
+
+        excelPaths = DirUtil.filterFilePath(self.updateByExcelColumnsScannerExcelsDirPath, self.updateByExcelColumnsScannerExcelSuffix)
+        if len(excelPaths) == 0:
+            Colors.print(Colors.FAIL, "没有扫描到后缀名包含 %s 的Excel文件，路径信息：%s"%(self.updateByExcelColumnsScannerExcelSuffix, self.updateByExcelColumnsScannerExcelsDirPath))
+        
+        return excelPaths
+
+    def generateUpdateSqls(self, excelDataMap, logger):
+        '''
+        根据Excel生成UPDATE SQL信息
+        '''
         updateSqls = []
         execExcelIndex = 1
         for excelPathKey in excelDataMap.keys():
@@ -187,25 +149,8 @@ class DataBaseService:
                 
                 execDataIndex += 1
             execExcelIndex += 1
-        
-        if len(updateSqls) == 0:
-            Colors.print(Colors.FAIL, "\n\n生成SQL数据为 0 条，跳过执行更新操作")
-            return
-        else:
-            Colors.print(Colors.OKGREEN, "\n\n成功生成 %s 条SQL"%(len(updateSqls)))
-            for updataSql in updateSqls:
-                Colors.print(Colors.OKBLUE, updataSql)
 
-            choise = input("\n是否继续执行[Y/N]：")
-            if "Y" == choise.upper():
-                DBUtils.batchUpdate(updateSqls)
-            elif "N" == choise.upper():
-                return
-            else:
-                Colors.print(Colors.FAIL, "输入选项有误！")
-                return
-
-        DBUtils.closeConnect(connection)
+        return updateSqls
 
     def checkExcelNone(self, excelData):
         '''
@@ -221,29 +166,19 @@ class DataBaseService:
                     return True
         return False
 
-    def checkExcelAndConfigInfo(self):
+    def testDBConnection(self):
         '''
-        检查配置文件中map与excel表格中的信息是否对应
+        测试数据库连接性
         '''
-        excelTitle = ExcelUtils.read(self.updateByExcelExcelPath, True)
-        if not list(self.updateByExcelMap.keys()) == excelTitle:
-            Colors.print(Colors.FAIL, "配置文件中的设置与Excel表头不一致，请检查")
+        Colors.print(Colors.OKBLUE, "正在测试数据库连接性，请稍后……")
+        dbConnect = DBUtils().getConnection(Database())
+        if dbConnect == None:
+            Colors.print(Colors.FAIL, "测试数据库连接性失败！")
             return False
-        Colors.print(Colors.OKGREEN, "已通过配置文件中的设置与Excel表头检查校验")
-        return True
-
-    def resetUpdateByExcelConfigInfo(self):
-        '''
-        重新赋值配置文件信息
-        '''
-        try:
-            self.config.read(self.configPath, encoding='utf-8')
-            self.updateByExcelMap = json.loads(self.config['update_by_excel']['map'])
-            self.updateByExcelWhereColumns = self.config['update_by_excel']['whereColumns'].split()
-            self.updateByExcelUpdateColumns = self.config['update_by_excel']['updateColumns'].split()
-            self.updateByExcelExcelPath = self.config['update_by_excel']['excelPath']
-        except:
-            Colors.print(Colors.FAIL, "读取配置文件失败，请检查！")
+        else:
+            Colors.print(Colors.OKGREEN, "测试数据库连接性成功")
+            DBUtils().closeConnect(dbConnect)
+            return True
 
     def resetUpdateByExcelColumnsConfigInfo(self):
         '''
@@ -270,6 +205,15 @@ class DataBaseService:
         except:
             Colors.print(Colors.FAIL, "读取配置文件失败，请检查！")
 
+    def isContinue(self):
+        choise = input("是否继续执行[Y/N]：")
+        if "Y" == choise.upper():
+            return True
+        elif "N" == choise.upper():
+            return False
+        else:
+            Colors.print(Colors.FAIL, "输入选项有误！")
+            return False
 
     def printDatabaseConfigInfo(self):
         Colors.print(Colors.OKBLUE, '''
@@ -282,22 +226,7 @@ class DataBaseService:
 密码：%s
 '''%(Database().host, Database().port, Database().dbName, Database().tableName, Database().username, Database().password))
 
-    def printUpdateByExcelInfo(self):
-        '''
-        打印配置文件信息
-        '''
-        Colors.print(Colors.OKBLUE, '''
-[数据库表与Excel表格映射关系]
-%s
-[数据库表查询的Where条件]
-%s
-[数据库需要更新的字段列]
-%s
-[Excel表格所处的路径信息]
-%s
-'''%(self.updateByExcelMap, self.updateByExcelWhereColumns, self.updateByExcelUpdateColumns, self.updateByExcelExcelPath))
-
-    def printUpdateByExcelColumnsInfo(self):
+    def printUpdateByExcelColumnsConfigInfo(self):
         '''
         打印配置文件信息
         '''

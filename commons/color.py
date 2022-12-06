@@ -13,11 +13,8 @@ class Colors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
-    logger = LoggerUtil().getLogger("console-log")
-
     @classmethod
     def print(self, color, text):
         printInfo = f"{color}{text}{self.ENDC}"
         print(printInfo)
-        self.logger.info(printInfo)
         return printInfo

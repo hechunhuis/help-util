@@ -13,9 +13,6 @@ import sys
 class SystemService:
     '''
     系统服务类
-    如果您想自定义菜单，只需要重新构建menus数据即可，menus数组包含MenuModel对象列表
-    MenuModel:
-        id(主键),parentId(父主键),name(功能菜单名称),description(功能菜单描述),method(功能菜单所对应执行的方法)
     '''
 
     logoPath = "logo.ini"
@@ -47,8 +44,7 @@ class SystemService:
         self.menus.append(Menu(16, 14, "将日期转换为时间戳", "", DateService().converDateToTime))
         
         self.menus.append(Menu(17, 0, "数据库工具", "", None))
-        self.menus.append(Menu(18, 17, "批量设置数据库字段值", "【根据表格对应关系批量设置】", DataBaseService().updateByExcel))
-        self.menus.append(Menu(19, 17, "批量设置数据库字段值根据列", "【根据表格对应关系批量设置】", DataBaseService().updateByExcelColumns))
+        self.menus.append(Menu(18, 17, "批量设置数据库字段值", "【根据表格对应关系批量设置】", DataBaseService().updateByExcelColumns))
 
         self.menus.append(Menu(0, 0, "退出", "", sys.exit))
     
