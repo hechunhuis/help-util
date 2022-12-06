@@ -107,7 +107,7 @@ class SystemService:
                 self.printCurrentMenuPath()
                 for menu in subMenus:
                     consoleId = menu.id if (menu.id > 10) else "%s%s"%(menu.id, " ")
-                    Colors.print(Colors.OKGREEN, "%s. %s%s"%(consoleId, menu.name, menu.description))
+                    Colors.print(Colors.OKCYAN, "%s. %s%s"%(consoleId, menu.name, menu.description))
                 while True:
                     selected = input("\n请选择菜单选项[回车返回上级]：")
                     if selected == '':
