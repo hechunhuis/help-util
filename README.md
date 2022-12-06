@@ -123,9 +123,9 @@ class MenuModel:
 
 概述：根据Excel表格，以及配置文件，对数据库字段进行批量修改
 
-需要先配置**help-util/configs/update_by_excel.ini**
+需要先配置**help-util/configs/config.ini**
 
-**update_by_excel.ini配置说明**
+**config.ini配置说明**
 
 ```ini
 [database]

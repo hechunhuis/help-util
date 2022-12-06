@@ -12,7 +12,7 @@ from utils.dir_util import DirUtil
 class DataBaseService:
 
     config = None
-    configPath = './configs/update_by_excel.ini'
+    configPath = './configs/config.ini'
 
     updateByExcelColumnsReadStartRow = None
     updateByExcelColumnsTitle = None
