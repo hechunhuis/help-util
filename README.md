@@ -169,12 +169,12 @@ scannerExcelSuffix = .xlsx
 ```sql
 UPDATE `tableName`
 SET 
-	db_column_3 = "数据表格第 3 列内容",
+    db_column_3 = "数据表格第 3 列内容",
     db_column_4 = "数据表格第 4 列内容"
 WHERE
-	db_column_1 = "数据表格第 1 列内容"
-	AND db_column_2 = "数据表格第 2 列内容"
-	AND draft = false AND del=false
+    db_column_1 = "数据表格第 1 列内容"
+    AND db_column_2 = "数据表格第 2 列内容"
+    AND draft = false AND del=false
 ```
 
 
